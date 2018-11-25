@@ -1,3 +1,4 @@
+/*
 package week01.extendandinterface;
 
 
@@ -28,3 +29,4 @@ public class JDBCObject {
 }
 
 
+*/

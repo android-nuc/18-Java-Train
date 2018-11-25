@@ -1,3 +1,4 @@
+/*
 package week01.extendandinterface;
 
 public class Employee extends Person implements Comparable<Employee>{
@@ -53,3 +54,4 @@ public class Employee extends Person implements Comparable<Employee>{
         return Integer.compare(getSalary(), o.getSalary());
     }
 }
+*/

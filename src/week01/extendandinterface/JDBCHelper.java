@@ -1,3 +1,4 @@
+/*
 package week01.extendandinterface;
 
 import java.io.IOException;
@@ -16,11 +17,13 @@ public class JDBCHelper {
 
     }
 
-    /**
+    */
+/**
      * 线程安全的懒加载单例
      *
      * @return
-     */
+     *//*
+
     public static JDBCHelper getInstance() {
         if (null == sJDBCHelper) {
             synchronized (JDBCHelper.class) {
@@ -65,3 +68,4 @@ public class JDBCHelper {
         return response;
     }
 }
+*/

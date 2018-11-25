@@ -1,3 +1,4 @@
+/*
 package week01.extendandinterface;
 
 public class Manager extends Employee {
@@ -29,22 +30,26 @@ public class Manager extends Employee {
         this.bonus = bonus;
     }
 
-    /**
+    */
+/**
      * 同名方法重载
      *
      * @param bonus  浮动奖金
      * @param pyDeal 写py thon代码的奖金
-     */
+     *//*
+
     public void setBouns(int bonus, int pyDeal) {
         this.bonus = bonus + pyDeal;
     }
 
-    /**
+    */
+/**
      * 更新获取薪水的方法: 底薪+浮动奖金
      * 重写父类方法是一种多态现象.父类对象会调用父类的方法,子类对象会调用子类的方法
      *
      * @return
-     */
+     *//*
+
     @Override
     public final int getSalary() {
         //先调用父类的getSalary()获取底薪
@@ -57,3 +62,4 @@ public class Manager extends Employee {
         return Integer.compare(getSalary(), o.getSalary());
     }
 }
+*/

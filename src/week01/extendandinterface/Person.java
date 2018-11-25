@@ -1,12 +1,15 @@
+/*
 package week01.extendandinterface;
 
 public abstract class Person extends JDBCObject{
     private String name;
     private int sex;
 
-    /**
+    */
+/**
      * 声明构造函数,在创建子类时需要调用
-     */
+     *//*
+
     public Person() {
     }
 
@@ -31,9 +34,12 @@ public abstract class Person extends JDBCObject{
         this.sex = sex;
     }
 
-    /**
+    */
+/**
      * 抽象方法
      * @return 对Person的描述
-     */
+     *//*
+
     public abstract String getDescription();
 }
+*/

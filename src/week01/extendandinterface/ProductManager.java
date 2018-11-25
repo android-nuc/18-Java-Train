@@ -1,3 +1,4 @@
+/*
 package week01.extendandinterface;
 
 public final class ProductManager extends Manager {
@@ -5,3 +6,4 @@ public final class ProductManager extends Manager {
         return super.getSalary() + pyTrade;
     }
 }
+*/

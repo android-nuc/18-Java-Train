@@ -50,9 +50,11 @@ class In implements Runnable {
         while (true) {
             synchronized (res) {
                 //如果资源标记位为true，表示已有资源，此时将input线程wait
-                //在wait时，需要使用
+                //在wait时，需要先将消费者进程唤醒
                 if (res.flag) {
                     try {
+                        //当前的同步锁就是共享资源对象res
+                        //所以用res调用wait方法将当前生产者线程等待
                         res.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -65,7 +67,7 @@ class In implements Runnable {
                     res.name = "wang";
                     res.type = "low";
                 }
-                i = (i + 1) % 2;
+                i = (i + 1) % 2; //交替生产
                 //将标记位修改为true，表示当前已有资源被创建
                 res.flag = true;
                 //input生产完成后，需要将output线程唤醒
