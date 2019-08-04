@@ -42,6 +42,45 @@
 | == | (逻辑) **值**相等 (注意与 `equals()` 的区别) | 1 != 2 | boolean |
 | != | (逻辑) **值**不等 (注意与 `!equals()` 的区别) | 1 != 2 | boolean |
 
+### 表示数字字面量
+
+和 C 语言相同
+
+#### 1. 很长的数字
+
+为了方便阅读，你可以在数字直接加下划线方便阅读
+```java
+public static final int BIG_NUMBER = 1_000_000_000;
+```
+
+#### 2. 表示 long 类型
+
+默认情况下你直接输入的数字总是表示 `int` 类型，要表示 `long`，在数字字面量后面加 **L**
+
+```java
+public static final long BIG_NUMBER = 1_000_000_000_000_000_000L;
+```
+
+#### 3. 表示各种进制数
+
+**八进制**(**注意！**)
+
+这里主要要强调和十进制的区别，Java 中，0123 **≠** 123
+
+在数字字面量前加 `0` 表示八进制数，而不是十进制数，如果你忘了这点，很可能会搞/出事情
+
+**二进制**(在书写 flag 和位运算时特别有用)
+```java
+public static final int NUMBER = 0b01110110;
+```
+
+**十六进制**
+```java
+public static final int NUMBER = 0xaff211;
+```
+
+
+
 ## 循环
 
 若要遍历某个数组或 List，请使用 for-each 语句而不是 for 语句
@@ -54,15 +93,82 @@
 
 # 类 Class
 
+## 定义一个类
+
+**请务必**永远只在一个文件定义一个类。（无论是不是 public）
+
 ## 构造方法、初始化器
 
 ## 实例方法
 
 ## 静态方法和静态字段
 
+如果一个类的某个方法并不需要对象的应用，请考虑将其设为静态
+
 ## 静态初始化器
 
+## 类的组合
+
 ## 类的继承
+
+### 继承注意事项
+
+#### 构造方法绝不能直接或间接调用可重写的方法
+
+父类构造方法在子类构造方法之前运行。若这样做，会使得在子类构造方法运行之前，子类中的重写方法被调用。 
+
+如果重写方法依赖于子类构造方法执行的任何初始化，则此方法将不会按预期运行。例如：
+
+```java
+import java.time.Instant;
+
+public class Nineteen extends Super {
+    // Blank final, set by constructor
+    private final Instant instant;
+
+    Nineteen() {
+        instant = Instant.now();
+    }
+
+    // Overriding method invoked by superclass constructor
+    @Override
+    public void overrideMe() {
+        System.err.println(instant);
+    }
+
+    public static void main(String[] args) {
+        Nineteen sub = new Nineteen();
+        sub.overrideMe();
+    }
+}
+
+class Super {
+    // Broken - constructor invokes an overridable method
+    Super() {
+        this.overrideMe();
+    }
+
+    public void overrideMe() {
+        System.out.println("Parent");
+    }
+}
+```
+
+你期望的输出：
+
+```
+2019-08-03T09:02:08.232943Z
+2019-08-03T09:02:08.232943Z
+```
+
+实际结果：
+
+```
+null
+2019-08-03T09:02:08.232943Z
+```
+
+> 解决这个问题的最好办法是，在没有想要安全地子类化的设计和文档说明的类中禁止子类化。 有两种方法禁止子类化。 两者中较容易的是声明类为 final。 另一种方法是使所有的构造方法都是私有的或包级私有的，并且添加公共静态工厂来代替构造方法。 这个方案在内部提供了使用子类的灵活性，在条目 17 中讨论过。两种方法都是可以接受的。
 
 ## 命名守则
 
@@ -86,11 +192,22 @@
 
 # 异常 Exception
 
-必检异常是垃圾设计
+指出，必检异常，除了 `EOFException` 此类以及利用异常编程的业务逻辑，其余都是垃圾设计
 
 ## 抛出和捕获异常
 
 ## 常用异常
+
+| 异常 | 	使用场合 |
+| -----  | ------  |
+| IllegalArgumentException	| 非 null 的参数值不正确 |
+| IllegalStateException	| 不适合方法调用的对象状态 |
+| NullPointerException	| 在禁止使用 null 的情况下参数值为 null |
+| IndexOutOfBoundsExecption	| 下标参数值越界 |
+| ConcurrentModificationException	| 在禁止并发修改的情况下，检测到对象的并发修改 |
+| UnsupportedOperationException	| 对象不支持用户请求的方法 |
+
+不要直接抛出 Exception、RuntimeException、Throwable 或者 Error。因为它们是一个方法可能抛出的其他异常的超类。
 
 ## NullPointerException 问题和防止
 
@@ -122,13 +239,23 @@
 
 强调接口的无状态性
 
+强调接口一开始就要定义好，发布后不要随便修改，即使是默认方法
+
 ## 两种方法实现一个接口
 
 ## 匿名类
 
+请优先使用 Lambda 或方法引用 而不是匿名类。
+
 ## Lambda
 
 ## 默认方法与 Trait 思想
+
+## 不要在后期随意添加默认方法
+
+名称冲突
+
+在默认方法的情况下，接口的现有实现类可以在没有错误或警告的情况下编译，但在运行时会失败。
 
 ## 函数式编程简介
 
@@ -248,6 +375,12 @@ f(⋅)是不变（invariant）的，当A≤B时上述两个式子均不成立，
 
 ## volatile 关键字
 
+# 杂项
+
+## 用位操作实现 Flag
+
+尽管现在通常不推荐用位操作来实现 Flag (取而代之，使用 `EnumSet` )，但许多老项目，特别是 Android，仍然大量用到了位运算表示 Flag 
+
 # 常用接口
 
 ## 可序列化 Serializable
@@ -275,7 +408,7 @@ AutoClosable
 * `clone()` 方法不调用类的构造器
 * 如果你的这个类不允许继承，则应该处理掉 `CloneNotSupportedException`。若允许继承，则不应该处理此异常，或者压根别实现 Cloneable 接口
 
-## 可比较 Comparable
+## 可比较 Comparable\<T\>
 
 描述这个类的对象与另一个对象存在大小关系，并且可以相互比较大小。如果你的类携带的信息可以用作比较（例如名字的字母排序），则应该考虑实现一下这个接口了。
 
@@ -292,6 +425,10 @@ a.compareTo(b)
 **注意**：通常建议如果 compareTo() 返回 0，则 equals() 也应该返回 true. 除非确实存在某些原因不能这样做。
 
 当 compareTo() 返回 0，而 equals() 返回 false 时，有序集合的行为会与其他集合的行为变得不同。当把这两个元素往有序集合和其他集合里面放时，有序集合认为两个元素是相同的而只装其中一个，而其他集合会认为这两个元素不相同而全部装进去。
+
+## 内置常用函数式接口
+
+
 
 # 反射初步
 
@@ -325,7 +462,27 @@ a.compareTo(b)
 
 ## 封装
 
+> 将设计良好的组件与设计不佳的组件区分开来的最重要的因素是，隐藏内部数据和其他实现细节的程度。一个设计良好的组件隐藏了它的所有实现细节，干净地将它的 API 与它的实现分离开来。然后，组件只通过它们的 API 进行通信，并且对彼此的内部工作一无所知。这一概念，被称为信息隐藏或封装，是软件设计的基本原则
+
+### 最小化访问权限
+
+访问权限：public > protected > 默认(package-private) > private
+
+一句话，访问权限越低越好。
+
+**目的**：提高协作效率，让别人一眼明白哪些是你提供的 API
+
+### 最小化可变性
+
 ## get/set
+
+通常不建议在 Java 直接访问属性。因为在 Java 中，我们无法控制这个属性被读写时的行为。如果后期需要进行某些变更，这会很棘手。
+
+你应该设计 getter/setter 来访问属性，并将属性的可访问性修改为 private.
+
+> 这样做的目的是提高项目的可维护性。像 PHP 这些可以随时修改被属性读写时的行为的语言，可以不设计 getter/setter
+
+当然，如果这个类是你的私有 API，你从不保证这些 API 不会发生变更，那怎么做随你。
 
 ## 科学地覆盖 equals() hashCode() toString()
 
@@ -376,11 +533,11 @@ public int hashCode() {
 
 **通常的实现方法**
 
-### 设计 public static final INSTANCE 字段
+### 设计 private static final INSTANCE 字段
 
 ```java
 public class Signleton {
-    public static final Signleton INSTANCE = new Signleton();
+    private static final Signleton INSTANCE = new Signleton();
 
     // 注意：一定要提供 private 的构造器，防止他人new这个类
     private Signleton() {
@@ -414,6 +571,8 @@ public enum Signleton {
 如果你想使用 `finalize()` 方法，建议你去实现 `Closeable` 接口、定义一个 `close()` 方法。
 
 如果你觉得手工调用 `close()` 很麻烦，你还可以实现 `AutoCloseable` 接口。通过结合 try 语句，可以实现自动关闭。
+
+> Java 9 中新增了 Cleaner 机制代替 Finalizer 机制，但这个机制仍然是不可靠的。不建议使用。
 
 ### finalize() 方法的正确用途
 
