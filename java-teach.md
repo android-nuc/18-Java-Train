@@ -392,6 +392,20 @@ f(⋅)是不变（invariant）的，当A≤B时上述两个式子均不成立，
 
 ## 线程池 ThreadPool
 
+我们通常不推荐为了一件任务就创建一个线程然后用完就销毁它。创建线程的开销是*很大*的
+
+### Executor / Task
+
+基本使用方法：
+
+```java
+ExecutorService exec = Executors.newSingleThreadExecutor(); //开一个任务处理器
+exec.execute(runnable); //提交一个任务，需要实现 Runnable
+exec.shutdown(); //终止任务
+```
+
+工作队列
+
 ## 并发相关的基本概念
 
 ### 原子性
@@ -689,7 +703,7 @@ public enum Signleton {
 
 **注意**：除非某个字段初始化的开销比较大，否则不要使用延迟初始化
 
-### 并发情况下的惰性加载
+### 并发情况下的惰性加载和惰性单例模式
 
 双重检查
 
