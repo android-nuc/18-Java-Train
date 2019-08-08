@@ -1,3 +1,5 @@
+
+
 # 面向对象基础概念 
 
 ## 对象
@@ -186,6 +188,10 @@ null
 
 ## 参数和返回值的设计思想
 
+### 推广你的参数！
+
+接受接口类型而不是实现类型
+
 # 保护级别
 
 # 包 package
@@ -232,6 +238,25 @@ null
 ### Sorted*
 
 ### Tree*
+
+### Enum*
+
+#### EnumSet
+
+当你需要描述 `flags` 或者想要使用枚举数组时、或者想要定义几个int常量描述什么东西时，优先考虑使用 `EnumSet` 代替。
+
+```java
+Set<MazhaColor> colors = EnumSet.of(MazhaColor.GREEN, MazhaColor.BLUE)
+```
+
+#### EnumMap
+
+当你需要一个用枚举作为键的 Map 时，用它。这个时候 `EnumMap` 性能最佳。
+
+```java
+Map<MazhaType, Set<Mazha>>  mazhasByType =
+    new EnumMap<>(MazhaType.class);
+```
 
 # 接口、抽象类和 Lambda 初步
 
@@ -367,6 +392,84 @@ f(⋅)是不变（invariant）的，当A≤B时上述两个式子均不成立，
 
 ## 线程池 ThreadPool
 
+## 并发相关的基本概念
+
+### 原子性
+
+即一个操作或者多个操作，要么**全部执行**并且执行的过程不会被**任何**因素*打断*或*干扰*，要么就**都不执行**。
+
+> 原子性就像数据库里面的事务一样，他们是一个集体，同生共死。（没学过数据库事务可以忽略这句话...）
+
+### 可见性
+
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
+
+### 有序性
+
+即程序执行的顺序按照代码的先后顺序执行，而不是乱序的。
+
+```java
+int i = 0;              
+boolean flag = false;
+i = 1;                //语句1  
+flag = true;          //语句2
+```
+
+比如上面的代码中，语句1和语句2谁先执行对最终的程序结果并没有影响，那么就有可能在执行过程中，语句2*先*执行而语句1*后*执行。
+
+## 同步简介
+
+### 为何需要同步？
+
+如果没有同步，同一个对象的一个线程的变化就可能**不能**被其他线程看到。
+
+同步不仅可以阻止一个线程看到对象处于不一致的状态之中，它还可以保证进入同步方法或者同步代码块的每个线程，都能看到由同一个锁保护的之前所有的修改效果。
+
+### 范例
+
+lowb开发者可能觉得一般只需要写同步就够了，但很多情况下读也是需要同步的。下面是一种情况：
+
+```java
+public class StopThread {
+    private static Boolean stopRequested;
+
+    public static void main(String[] args) 
+            throws InterruptedException {
+        Thread backgroundThread = new Thread(() -> {
+            int i = 0;
+            //注意下面
+            while (!stopRequested)
+            i++;
+        });
+        backgroundThread.start();
+        TimeUnit.SECONDS.sleep(1);
+        stopRequested = true;
+    }
+}
+```
+
+事实上，你永远也停不下 `backgroundThread` ，因为我让你注意的那句话被优化成了这样：
+
+```java
+if (!stopRequested)
+    while (true)
+        i++;
+```
+
+解决此问题的办法是对 `stopRequested` 使用同步的 getter/setter 方法，或者为其添加 `volatile` 关键字
+
+### 怎么解决同步问题？
+
+通常使用以下方法（选一种）：
+
+1. 如果数据不需要修改，直接让其成为只读的（废话）
+2. 将可变数据限制在单个线程中
+3. 当多个线程共享可变数据的时候，对读写同步
+
+注意：除非读和写操作都被同步，否则无法保证同步能起作用。
+
+下面所讲的，就是第三条【同步】的常用方法。
+
 ## 锁
 
 ## synchronized
@@ -374,6 +477,10 @@ f(⋅)是不变（invariant）的，当A≤B时上述两个式子均不成立，
 ## 阻塞队列 BlockingQueue
 
 ## volatile 关键字
+
+## wait() 和 notify()
+
+现在是 9102 年了，这节的内容已经不怎么重要了。*了解即可*
 
 # 杂项
 
@@ -580,6 +687,12 @@ public enum Signleton {
 
 ## 惰性加载
 
+**注意**：除非某个字段初始化的开销比较大，否则不要使用延迟初始化
+
+### 并发情况下的惰性加载
+
+双重检查
+
 ## 事件、回调和观察者
 
 ## 面向切面编程 AOP
@@ -637,9 +750,67 @@ public enum Signleton {
 
 ## JNI / native 关键字
 
-实在不会用 Java 的话就用 JNI 来协作8
+本节仅作了解即可。或者可以*直接跳过*。
+
+\<!\> **警告:** JNI 十分危险，除非你确实有过人的 C/C++ 能力，否则不要因为不熟悉 Java 而去使用 JNI.
+
+使用 JNI，无外乎下面几种情况：
+
+ * 加速算法运行
+ * 与操作系统本地 API 交互
+ * 防止核心算法遭逆向工程而暴露
+
+基本使用流程如下:
+
+### Java class
+
+```java
+public class NativeInterface {
+    static {
+        System.loadLibrary("JNIProject"); //只能为文件名，不含路径和扩展名
+    }
+
+    public static native String test(); //给方法带上 native 关键字即表示这是本地方法
+    public native String nonStaticArray();
+}
+```
+
+### 生成头文件
+
+Java 10+: `javac -h . NativeInterface.java`
+Java 旧版本: `javah -jni . NativeInterface.java`
+
+### JVM 命令
+
+指定库路径: `-Djava.library.path=./JNI/JNIProject/x64/Debug`
+
+### C++
+
+```c++
+#include "NativeInterface.h"
+#include <cstdio>
+
+int main()
+{
+	return 0;
+}
+
+JNIEXPORT jstring JNICALL Java_NativeInterface_test(JNIEnv* env, jclass cls) 
+{
+	printf("%s", "jni ok\n");
+	printf("%d", 666);
+	return env->NewStringUTF("yooooo STATIC");
+}
+
+JNIEXPORT jstring JNICALL Java_NativeInterface_nonStaticArray(JNIEnv* env, jobject obj)
+{
+	return env->NewStringUTF("Non static");
+}
+```
 
 ## Kotlin 神教!
+
+本节仅作了解即可。或者可以*直接跳过*。
 
 * 空安全
 * 自带单例模式
